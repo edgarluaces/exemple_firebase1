@@ -5,6 +5,11 @@ import 'package:flutter/material.dart';
 class PaginaRegistre extends StatelessWidget {
   const PaginaRegistre({super.key});
 
+
+  void ferRegistre(){
+
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -85,7 +90,7 @@ class PaginaRegistre extends StatelessWidget {
             
                 //No estas registrat
                 Padding(
-                  padding: const EdgeInsets.only(right: 25),
+                  padding: const EdgeInsets.only(right: 180),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
@@ -100,15 +105,25 @@ class PaginaRegistre extends StatelessWidget {
                         child: Text("Fes login", 
                           style: TextStyle(
                           fontWeight: FontWeight.bold, 
-                          color: Color.fromARGB(255, 0, 255, 42),),),
+                          color: Color.fromARGB(255, 11, 109, 28),),),
                       ),
                     ],
                   ),
                 ),
-                SizedBox(height: 10,),
+                SizedBox(height: 15,),
 
                 //boton registro
-                BotoAuth(),
+                BotoAuth(
+                  text: "Registre",
+                  onTap: ferRegistre,
+                ),
+
+                BotoAuth(
+                  text: "Logout",
+                  onTap: () {
+
+                  },
+                ),
 
 
               ],
