@@ -118,14 +118,13 @@ class PaginaRegistre extends StatelessWidget {
                   onTap: ferRegistre,
                 ),
 
+                //boto logout
                 BotoAuth(
                   text: "Logout",
                   onTap: () {
-
+                    
                   },
                 ),
-
-
               ],
             ),
           ),

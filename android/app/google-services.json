@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1077505844683",
+    "project_id": "exemple-firebase-edgar",
+    "storage_bucket": "exemple-firebase-edgar.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1077505844683:android:f98a477af04f9f5787824e",
+        "android_client_info": {
+          "package_name": "com.example.exemple_firebase1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDFj_yUoaNsV3psOm6BhWk_qnKyle1NAnY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
