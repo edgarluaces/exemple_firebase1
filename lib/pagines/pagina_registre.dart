@@ -7,11 +7,31 @@ class PaginaRegistre extends StatelessWidget {
   const PaginaRegistre({super.key});
 
 
-  void ferRegistre(){
-    
-    final ServeiAuth servicioAuth = ServeiAuth();
- 
-    servicioAuth.registroConEmailYPassword("email1@email.com", "123456");
+  void ferRegistre(BuildContext context, String email, String password, String confPassword ) async{
+
+    if(password.isEmpty || email.isEmpty) {
+      //Gestionarlo
+      return;
+    }
+
+    if(password != confPassword){
+      //Gestionar
+      return;
+    }
+
+    try {
+
+    }catch(e){
+
+      showDialog(context: context, builder: (context) => AlertDialog(
+        title: const Text("Error"),
+        content: Text(e.toString()),
+      ));
+
+    }
+
+    ServeiAuth().registroConEmailYPassword(email, password);
+  
   }
 
   @override
@@ -119,7 +139,7 @@ class PaginaRegistre extends StatelessWidget {
                 //boton registro
                 BotoAuth(
                   text: "Registre",
-                  onTap: ferRegistre,
+                  onTap: () => ferRegistre(context, tecEmail.text, tecPassword.text, tecConfPass.text),
                 ),
 
                 //boto logout
