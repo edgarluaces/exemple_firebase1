@@ -1,10 +1,14 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:exemple_firebase1/auth/servei_auth.dart';
 import 'package:exemple_firebase1/chat/Serveichat.dart';
+import 'package:exemple_firebase1/componentes/bombolla_missatge.dart';
 import 'package:flutter/material.dart';
 
 class PaginaChat extends StatefulWidget {
   final String idReceptor;
-  const PaginaChat({super.key,
-  required this.idReceptor,
+  const PaginaChat({
+    super.key,
+    required this.idReceptor,
   });
 
   @override
@@ -12,19 +16,17 @@ class PaginaChat extends StatefulWidget {
 }
 
 class _PaginaChatState extends State<PaginaChat> {
-
   final TextEditingController tecMissatge = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 255, 153, 122), 
+        backgroundColor: const Color.fromARGB(255, 255, 153, 122),
         title: Text("Sala chat"),
       ),
       body: Column(
         children: [
-
           //zona missatges
           _crearzonamostrarmissatges(),
 
@@ -34,47 +36,75 @@ class _PaginaChatState extends State<PaginaChat> {
       ),
     );
   }
-  
+
   Widget _crearzonamostrarmissatges() {
-    return Expanded(child: Text("1"));
+    return Expanded(
+        child: StreamBuilder(
+      stream: Serveichat().getMissatges
+      (ServeiAuth().getUsuariActual()!.uid, widget.idReceptor),
+      builder: (context, snapshot) {
+
+        //cas que hagi error
+        if(snapshot.hasError){
+          return const Text("Error carregant missatges.");
+        }
+
+        //cas esta carregant dades
+        if (snapshot.connectionState == ConnectionState.waiting){
+          return const Text("carregant missatges...");
+        }
+
+        //retornar dades (missatges)
+        return ListView(
+          children: snapshot.data!.docs.map((document) => _construirItemMissatge(document)).toList(),
+        );
+
+      },
+    ));
   }
 
-  
+  Widget _construirItemMissatge(DocumentSnapshot documentSnapshot){
+
+    Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+
+    return BombollaMissatge(missatge: data["missatge"]);
+ 
+  }
+
+
   Widget _crearzonamissatges() {
     return Padding(
       padding: const EdgeInsets.all(10.0),
       child: Row(
         children: [
-          Expanded(child: TextField(
-            controller: tecMissatge,
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.green,
+          Expanded(
+            child: TextField(
+              controller: tecMissatge,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.green,
+              ),
             ),
-           ),
           ),
-
           SizedBox(width: 10),
-          
           IconButton(
-            onPressed: enviarMissatge, 
-            icon: Icon(Icons.send, color: Colors.white,),
+            onPressed: enviarMissatge,
+            icon: Icon(
+              Icons.send,
+              color: Colors.white,
+            ),
             style: ButtonStyle(
-              backgroundColor: WidgetStatePropertyAll
-              (Colors.green)),)
+                backgroundColor: WidgetStatePropertyAll(Colors.green)),
+          )
         ],
       ),
     );
   }
 
-  void enviarMissatge(){
-
-    if (tecMissatge.text.isNotEmpty){
-      Serveichat().enviarMissatge(
-        widget.idReceptor, 
-        tecMissatge.text);
-        tecMissatge.clear();
+  void enviarMissatge() {
+    if (tecMissatge.text.isNotEmpty) {
+      Serveichat().enviarMissatge(widget.idReceptor, tecMissatge.text);
+      tecMissatge.clear();
     }
   }
-
 }
