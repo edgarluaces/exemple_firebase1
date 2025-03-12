@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 class PaginaChat extends StatefulWidget {
   final String idReceptor;
+
   const PaginaChat({
     super.key,
     required this.idReceptor,
@@ -17,10 +18,27 @@ class PaginaChat extends StatefulWidget {
 
 class _PaginaChatState extends State<PaginaChat> {
   final TextEditingController tecMissatge = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    Future.delayed(const Duration(milliseconds: 500), () {
+      FerScrollAbajo();
+    });
+  }
+
+  void FerScrollAbajo() {
+    _scrollController.animateTo(_scrollController.position.maxScrollExtent + 100,
+        duration: const Duration(seconds: 1), curve: Curves.fastOutSlowIn);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 152, 231, 255),
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 255, 153, 122),
         title: Text("Sala chat"),
@@ -40,37 +58,38 @@ class _PaginaChatState extends State<PaginaChat> {
   Widget _crearzonamostrarmissatges() {
     return Expanded(
         child: StreamBuilder(
-      stream: Serveichat().getMissatges
-      (ServeiAuth().getUsuariActual()!.uid, widget.idReceptor),
+      stream: Serveichat()
+          .getMissatges(ServeiAuth().getUsuariActual()!.uid, widget.idReceptor),
       builder: (context, snapshot) {
-
         //cas que hagi error
-        if(snapshot.hasError){
+        if (snapshot.hasError) {
           return const Text("Error carregant missatges.");
         }
 
         //cas esta carregant dades
-        if (snapshot.connectionState == ConnectionState.waiting){
+        if (snapshot.connectionState == ConnectionState.waiting) {
           return const Text("carregant missatges...");
         }
 
         //retornar dades (missatges)
         return ListView(
-          children: snapshot.data!.docs.map((document) => _construirItemMissatge(document)).toList(),
+          controller: _scrollController,
+          children: snapshot.data!.docs
+              .map((document) => _construirItemMissatge(document))
+              .toList(),
         );
-
       },
     ));
   }
 
-  Widget _construirItemMissatge(DocumentSnapshot documentSnapshot){
-
+  Widget _construirItemMissatge(DocumentSnapshot documentSnapshot) {
     Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
 
-    return BombollaMissatge(missatge: data["missatge"]);
- 
+    return BombollaMissatge(
+      missatge: data["missatge"],
+      idAutor: data["idAutor"],
+    );
   }
-
 
   Widget _crearzonamissatges() {
     return Padding(
@@ -105,6 +124,10 @@ class _PaginaChatState extends State<PaginaChat> {
     if (tecMissatge.text.isNotEmpty) {
       Serveichat().enviarMissatge(widget.idReceptor, tecMissatge.text);
       tecMissatge.clear();
-    }
+
+      Future.delayed(const Duration(milliseconds: 50), () {
+      FerScrollAbajo();
+    });
   }
+ }
 }
