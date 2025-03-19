@@ -102,7 +102,7 @@ class PaginaLogin extends StatelessWidget {
             
                 //No estas registrat
                 Padding(
-                  padding: const EdgeInsets.only(right: 180),
+                  padding: const EdgeInsets.only(right: 140),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
