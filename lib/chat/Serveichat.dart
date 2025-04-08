@@ -14,40 +14,32 @@ class Serveichat {
     });
   }
 
-  Future<void> enviarMissatge(String idreceptor, String missatge) async {
-    //la sala de chat es entre 2 usuaris
-
+  Future<void> enviarMissatge(String idReceptor, String missatge) async {
     String idUsuariActual = _auth.currentUser!.uid;
     String emailUsuariActual = _auth.currentUser!.email!;
-    Timestamp timestamp = Timestamp.now();
 
-    Missatge nouMissatge = Missatge(
-        idAutor: idUsuariActual,
-        emailAutor: emailUsuariActual,
-        idReceptor: idUsuariActual,
-        missatge: missatge,
-        timestamp: timestamp);
-
-    List<String> idsUsuaris = [idUsuariActual, idreceptor];
-    idsUsuaris.sort(); //ordenem la llista
-
-    String idSalachat = idsUsuaris.join("_");
+    List<String> idsUsuaris = [idUsuariActual, idReceptor];
+    idsUsuaris.sort();
+    String idSalaChat = idsUsuaris.join("_");
 
     await _firestore
         .collection("salesChat")
-        .doc(idSalachat)
+        .doc(idSalaChat)
         .collection("Missatges")
-        .add(
-          nouMissatge.retornaMapaMissatge(),
-        );
+        .add({
+      "idAutor": idUsuariActual,
+      "emailAutor": emailUsuariActual,
+      "idReceptor": idReceptor, 
+      "missatge": missatge,
+      "timestamp": FieldValue.serverTimestamp(), 
+    });
   }
 
-  Stream<QuerySnapshot> getMissatges(String idUsuariActual, String idreceptor) {
-    // creem el idSalaChat, igual que guardem els missatges
-    List<String> idsUsuaris = [idUsuariActual, idreceptor];
+  Stream<QuerySnapshot> getMissatges(String idUsuariActual, String idReceptor) {
+    List<String> idsUsuaris = [idUsuariActual, idReceptor];
     idsUsuaris.sort();
     String idSalaChat = idsUsuaris.join("_");
-    //retornem els missatges d'aquesta sala (collection)
+
     return _firestore
         .collection("salesChat")
         .doc(idSalaChat)

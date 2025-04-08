@@ -19,16 +19,19 @@ class PaginaChat extends StatefulWidget {
 class _PaginaChatState extends State<PaginaChat> {
   final TextEditingController tecMissatge = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  String _nombreReceptor = "Cargando..."; 
 
   FocusNode teclatMovil = FocusNode();
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
 
-    teclatMovil.addListener((){
-      Future.delayed(const Duration(milliseconds: 500),(){
+    // Llamamos a la función que obtiene el nombre del receptor
+    _obtenerNombreReceptor();
+
+    teclatMovil.addListener(() {
+      Future.delayed(const Duration(milliseconds: 500), () {
         FerScrollAbajo();
       });
     });
@@ -38,9 +41,31 @@ class _PaginaChatState extends State<PaginaChat> {
     });
   }
 
+  Future<void> _obtenerNombreReceptor() async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final receptorDoc = await firestore.collection("Usuarios").doc(widget.idReceptor).get();
+
+      if (receptorDoc.exists) {
+        final nombre = receptorDoc.data()?['nom'] ?? "";
+        setState(() {
+          _nombreReceptor = nombre.isNotEmpty ? nombre : "Sala Chat"; // Si no tiene nombre, mostramos "Sala Chat"
+        });
+      }
+    } catch (e) {
+      print("Error al obtener el nombre del receptor: $e");
+      setState(() {
+        _nombreReceptor = "Sala Chat";
+      });
+    }
+  }
+
   void FerScrollAbajo() {
-    _scrollController.animateTo(_scrollController.position.maxScrollExtent + 100,
-        duration: const Duration(seconds: 1), curve: Curves.fastOutSlowIn);
+    _scrollController.animateTo(
+      _scrollController.position.maxScrollExtent + 100,
+      duration: const Duration(seconds: 1),
+      curve: Curves.fastOutSlowIn,
+    );
   }
 
   @override
@@ -49,57 +74,55 @@ class _PaginaChatState extends State<PaginaChat> {
       backgroundColor: const Color.fromARGB(255, 152, 231, 255),
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 255, 153, 122),
-        title: Text("Sala chat"),
+        title: Text(_nombreReceptor), // El nombre o el valor por defecto
       ),
       body: Column(
         children: [
-          //zona missatges
-          _crearzonamostrarmissatges(),
-
-          //zona escribir missatges
-          _crearzonamissatges(),
+          _crearZonaMostrarMissatges(),
+          _crearZonaMissatges(),
         ],
       ),
     );
   }
 
-  Widget _crearzonamostrarmissatges() {
+  Widget _crearZonaMostrarMissatges() {
     return Expanded(
-        child: StreamBuilder(
-      stream: Serveichat()
-          .getMissatges(ServeiAuth().getUsuariActual()!.uid, widget.idReceptor),
-      builder: (context, snapshot) {
-        //cas que hagi error
-        if (snapshot.hasError) {
-          return const Text("Error carregant missatges.");
-        }
+      child: StreamBuilder(
+        stream: Serveichat().getMissatges(
+          ServeiAuth().getUsuariActual()!.uid,
+          widget.idReceptor,
+        ),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) return const Text("Error carregant missatges.");
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Text("Carregant missatges...");
+          }
 
-        //cas esta carregant dades
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Text("carregant missatges...");
-        }
-
-        //retornar dades (missatges)
-        return ListView(
-          controller: _scrollController,
-          children: snapshot.data!.docs
-              .map((document) => _construirItemMissatge(document))
-              .toList(),
-        );
-      },
-    ));
-  }
-
-  Widget _construirItemMissatge(DocumentSnapshot documentSnapshot) {
-    Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
-
-    return BombollaMissatge(
-      missatge: data["missatge"],
-      idAutor: data["idAutor"],
+          return ListView(
+            controller: _scrollController,
+            children: snapshot.data!.docs
+                .map((document) => _construirItemMissatge(document))
+                .toList(),
+          );
+        },
+      ),
     );
   }
 
-  Widget _crearzonamissatges() {
+  Widget _construirItemMissatge(DocumentSnapshot documentSnapshot) {
+    final data = documentSnapshot.data() as Map<String, dynamic>;
+
+    final timestamp = data["timestamp"] as Timestamp?;
+    final dataEnviament = timestamp?.toDate() ?? DateTime(2000, 1, 1); 
+
+    return BombollaMissatge(
+      missatge: data["missatge"]?.toString() ?? "",
+      idAutor: data["idAutor"]?.toString() ?? "",
+      dataEnviament: dataEnviament,
+    );
+  }
+
+  Widget _crearZonaMissatges() {
     return Padding(
       padding: const EdgeInsets.all(10.0),
       child: Row(
@@ -116,12 +139,10 @@ class _PaginaChatState extends State<PaginaChat> {
           SizedBox(width: 10),
           IconButton(
             onPressed: enviarMissatge,
-            icon: Icon(
-              Icons.send,
-              color: Colors.white,
-            ),
+            icon: Icon(Icons.send, color: Colors.white),
             style: ButtonStyle(
-                backgroundColor: WidgetStatePropertyAll(Colors.green)),
+              backgroundColor: WidgetStatePropertyAll(Colors.green),
+            ),
           )
         ],
       ),
@@ -134,8 +155,8 @@ class _PaginaChatState extends State<PaginaChat> {
       tecMissatge.clear();
 
       Future.delayed(const Duration(milliseconds: 50), () {
-      FerScrollAbajo();
-    });
+        FerScrollAbajo();
+      });
+    }
   }
- }
 }

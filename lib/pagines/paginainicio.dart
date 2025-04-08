@@ -67,6 +67,7 @@ class _PaginainicioState extends State<Paginainicio> {
 
     return ItemUsuari(
       emailUsuari: dadesUsuari["email"],
+       idUsuari: dadesUsuari["uid"],
       onTap: () {
         Navigator.push(
           context,
