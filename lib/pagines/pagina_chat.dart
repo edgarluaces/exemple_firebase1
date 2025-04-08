@@ -49,8 +49,8 @@ class _PaginaChatState extends State<PaginaChat> {
       if (receptorDoc.exists) {
         final nombre = receptorDoc.data()?['nom'] ?? "";
         setState(() {
-          _nombreReceptor = nombre.isNotEmpty ? nombre : "Sala Chat"; // Si no tiene nombre, mostramos "Sala Chat"
-        });
+        _nombreReceptor = nombre.isNotEmpty ? nombre : receptorDoc.data()?['email'] ?? "Sala Chat";
+      });
       }
     } catch (e) {
       print("Error al obtener el nombre del receptor: $e");
